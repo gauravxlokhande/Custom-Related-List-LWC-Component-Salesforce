@@ -1,0 +1,63 @@
+<template>
+
+
+
+    <template if:true={StoreAllRelatedObjects} for:each={StoreAllRelatedObjects} for:item="obj" for:index="index">
+        <div key={obj.Id} class="slds-m-top_large">
+            <div class="objname slds-box" key={obj.Id}>
+                <b class="message slds-text-heading_medium" data-name={obj}>{obj}</b>
+                <div class="alloperations">
+                    <div class="input">
+                        <lightning-input type="text" placeholder="Search for records..."></lightning-input>
+                    </div>
+                    <div class="selectfields">
+                        <!-- Pass the record Id to the click handler -->
+                        <lightning-button variant="brand" label="Select Fields"
+                            onclick={handleClickOfSelectFields}></lightning-button>
+                    </div>
+                    <div class="newbtn">
+                        <lightning-button variant="base" label="New" onclick={handleClickOfNew}></lightning-button>
+                    </div>
+                </div>
+            </div>
+            <lightning-datatable key-field="id" data={StoreAllRecordsData} columns={columns}></lightning-datatable>
+        </div>
+    </template>
+
+
+
+
+    <template if:true={isShowModal}>
+        <div class="modalstyle">
+            <section role="dialog" aria-labelledby="modal-heading-01" aria-modal="true"
+                aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                            title="Close" onclick={handleClickOfCloseModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse"
+                                size="small"></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Select The fields to
+                            display</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning-dual-listbox name="languages" label="Select fields" source-label="Available"
+                            selected-label="Selected" field-level-help="Select your preferred fields"
+                            options={StoreAllObjectFields} onchange={handleChangeOfSelectedFields}>
+                        </lightning-dual-listbox>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <div class="slds-align_absolute-center">
+                            <lightning-button variant="brand" label="Ok" onclick={handleClickOfOk}></lightning-button>
+                        </div>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+
+</template>

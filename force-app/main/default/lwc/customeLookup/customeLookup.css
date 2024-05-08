@@ -1,0 +1,38 @@
+.objname {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+}
+
+.alloperations {
+    display: flex;
+    flex-direction: row;
+    gap: 10px; 
+}
+
+.selectfields {
+    margin-top: 20px; 
+}
+
+.newbtn {
+    margin-top: 20px; 
+}
+
+.input {
+    margin-bottom: 5px; 
+}
+.modal-buttons{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 10px;
+    gap: 20px;
+}
+.modalstyle{
+    position: absolute;
+    top: 0;
+    left: 10px;
+    right: 10px;
+}
+
