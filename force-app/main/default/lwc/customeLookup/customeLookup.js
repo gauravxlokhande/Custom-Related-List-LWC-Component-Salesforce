@@ -8,33 +8,34 @@ export default class CustomeLookup extends LightningElement {
     @track StoreAllRelatedObjects = [];
     @track isShowModal = false;
     @track StoreAllObjectFields = [];
-    @track objName = 'Contact';
     @track selectedOptionsList = [];
     @track columns = [];
     @track StoreAllRecordsData = [];
     @track options = [];
+    @track Objectname = '';
 
     connectedCallback() {
         this.returnAllRelatedObject();
         console.log('Current Object Name::', this.objectApiName);
     }
 
-   async returnAllRelatedObject() {
-       await returnAllRelatedObjNames({ ObjectName: this.objectApiName })
+    async returnAllRelatedObject() {
+        await returnAllRelatedObjNames({ ObjectName: this.objectApiName })
             .then((result) => {
-                this.StoreAllRelatedObjects = result;
+                this.options = result.map(field => ({ label: field, value: field }));
                 console.log('Current Object Related Objects Names::', JSON.stringify(this.StoreAllRelatedObjects));
             }).catch((error) => {
                 console.error(error);
             });
     }
 
-  async  handleClickOfSelectFields(event) {
-      //  this.objName = event.currentTarget.dataset.name;
-        this.isShowModal = true;
-        console.log('Template Object Name::', this.objName);
 
-       await returnAllRelatedObjFields({ ObjectName: this.objName })
+    async  handleChange(event) {
+        this.Objectname = event.detail.value;
+
+        console.log('Template Object Name::', this.Objectname);
+
+        await returnAllRelatedObjFields({ ObjectName: this.Objectname })
             .then((result) => {
                 this.StoreAllObjectFields = result.map(field => ({ label: field, value: field }));
                 console.log('Template Object Fields::', JSON.stringify(this.StoreAllObjectFields));
@@ -42,6 +43,13 @@ export default class CustomeLookup extends LightningElement {
             .catch((error) => {
                 console.error(error);
             });
+    }
+
+
+
+
+     handleClickOfSelectFields() {
+        this.isShowModal = true;
     }
 
     handleClickOfCloseModal() {
@@ -60,14 +68,16 @@ export default class CustomeLookup extends LightningElement {
     }
     
     FetchallobjectData() {
-        queryObjectData({ objectName: this.objName, fields: this.selectedOptionsList })
+        console.log('Objname',this.Objectname);
+        console.log('Optionslist',this.selectedOptionsList);
+        queryObjectData({ objectName: this.Objectname, fields: this.selectedOptionsList })
             .then((result) => {
                 this.isShowModal = false;
                 this.StoreAllRecordsData = result;
-                console.log('Selected Object records:', result);
+                console.log('Selected Object records:', JSON.stringify(result));
             }).catch((error) => {
                 console.error(error.body.message);
             });
     }
-    
+
 }
