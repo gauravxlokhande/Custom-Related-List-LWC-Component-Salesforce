@@ -1,17 +1,17 @@
 <template>
-
+    <lightning-combobox name="progress" label="Status" value={value} placeholder="Select Progress" options={options}
+        onchange={handleChange}></lightning-combobox>
 
 
     <template if:true={StoreAllRelatedObjects} for:each={StoreAllRelatedObjects} for:item="obj" for:index="index">
         <div key={obj.Id} class="slds-m-top_large">
             <div class="objname slds-box" key={obj.Id}>
-                <b class="message slds-text-heading_medium" data-name={obj}>{obj}</b>
+                <b class="message slds-text-heading_medium" name="city" value={obj} data-name={obj}>{obj}</b>
                 <div class="alloperations">
                     <div class="input">
                         <lightning-input type="text" placeholder="Search for records..."></lightning-input>
                     </div>
                     <div class="selectfields">
-                        <!-- Pass the record Id to the click handler -->
                         <lightning-button variant="brand" label="Select Fields"
                             onclick={handleClickOfSelectFields}></lightning-button>
                     </div>
@@ -20,7 +20,7 @@
                     </div>
                 </div>
             </div>
-            <lightning-datatable key-field="id" data={StoreAllRecordsData} columns={columns}></lightning-datatable>
+            <lightning-datatable key-field="Id" data={StoreAllRecordsData} columns={columns}></lightning-datatable>
         </div>
     </template>
 
