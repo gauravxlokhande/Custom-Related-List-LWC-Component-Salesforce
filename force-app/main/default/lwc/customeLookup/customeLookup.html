@@ -1,6 +1,6 @@
 <template>
 
-    <div class="slds-m-top_large slds-box">
+    <div class="slds-m-top_large slds-box ">
         <div class="pick-selectfields slds-box">
             <div class="picklist">
                 <lightning-combobox name="progress" value={value} placeholder="Select The Child Object"
@@ -15,14 +15,16 @@
             <b class="message slds-text-heading_medium">{Objectname}</b>
             <div class="alloperations">
                 <div class="input">
-                    <lightning-input type="text" placeholder="Search for records..."></lightning-input>
+                    <lightning-input type="text" placeholder="Search for records..." value={SearchValue}
+                        onkeyup={HandleSearchRecords}></lightning-input>
                 </div>
                 <div class="newbtn">
                     <lightning-button variant="base" label="New" onclick={handleClickOfNew}></lightning-button>
                 </div>
             </div>
         </div>
-        <lightning-datatable key-field="Id" data={StoreAllRecordsData} columns={columns}></lightning-datatable>
+        <lightning-datatable key-field="Id" data={StoreAllRecordsData} columns={columns}
+            onrowaction={handleRowAction}></lightning-datatable>
     </div>
 
 

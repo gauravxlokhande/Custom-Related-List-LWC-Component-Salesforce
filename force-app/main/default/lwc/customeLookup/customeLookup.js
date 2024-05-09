@@ -1,10 +1,15 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track,wire } from 'lwc';
 import returnAllRelatedObjNames from '@salesforce/apex/CustomLookup.returnAllRelatedObjNames';
 import returnAllRelatedObjFields from '@salesforce/apex/CustomLookup.returnAllRelatedObjFields';
 import queryObjectData from '@salesforce/apex/CustomLookup.queryObjectData';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { getRecord, createRecord, updateRecord, deleteRecord, getRecordUi, getFieldValue, getFieldDisplayValue, getRecordCreateDefaults, createRecordInputFilteredByEditedFields, generateRecordInputForCreate, generateRecordInputForUpdate } from 'lightning/uiRecordApi';
+import { NavigationMixin } from 'lightning/navigation';
+import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 
-export default class CustomeLookup extends LightningElement {
-    @api objectApiName;
+
+export default class CustomeLookup extends NavigationMixin(LightningElement) {
+    @api objectApiName='';
     @track StoreAllRelatedObjects = [];
     @track isShowModal = false;
     @track StoreAllObjectFields = [];
@@ -30,7 +35,7 @@ export default class CustomeLookup extends LightningElement {
     }
 
 
-    async  handleChange(event) {
+    async handleChange(event) {
         this.Objectname = event.detail.value;
 
         console.log('Template Object Name::', this.Objectname);
@@ -48,7 +53,7 @@ export default class CustomeLookup extends LightningElement {
 
 
 
-     handleClickOfSelectFields() {
+    handleClickOfSelectFields() {
         this.isShowModal = true;
     }
 
@@ -60,16 +65,16 @@ export default class CustomeLookup extends LightningElement {
         this.selectedOptionsList = event.detail.value;
         console.log('Selected Object Fields:', this.selectedOptionsList);
     }
-    
 
-     handleClickOfOk() {
+
+    handleClickOfOk() {
         this.columns = this.selectedOptionsList.map(field => ({ label: field, fieldName: field }));
         this.FetchallobjectData();
     }
-    
+
     FetchallobjectData() {
-        console.log('Objname',this.Objectname);
-        console.log('Optionslist',this.selectedOptionsList);
+        console.log('Objname', this.Objectname);
+        console.log('Optionslist', JSON.stringify(this.selectedOptionsList));
         queryObjectData({ objectName: this.Objectname, fields: this.selectedOptionsList })
             .then((result) => {
                 this.isShowModal = false;
@@ -79,5 +84,51 @@ export default class CustomeLookup extends LightningElement {
                 console.error(error.body.message);
             });
     }
+
+
+    @track SearchValue = '';
+
+    HandleSearchRecords(event) {
+        this.SearchValue = event.target.value;
+        console.log('searchvalue', this.SearchValue);
+        if (this.SearchValue.length > 1) {
+            this.StoreAllRecordsData = this.StoreAllRecordsData.filter(item => {
+                return this.selectedOptionsList.some(element => {
+                    return item[element] && item[element].toLowerCase().includes(this.SearchValue.toLowerCase());
+                });
+            });
+        } else {
+            this.FetchallobjectData();
+        }
+    }
+    
+
+
+
+
+
+
+    handleRowAction(event) {
+        const selectedRow = event.detail.row;
+        // Perform action on selected row
+        console.log('Selected Row:', selectedRow);
+        // Example: Navigate to record detail page
+        this[NavigationMixin.Navigate]({
+            type: 'standard__recordPage',
+            attributes: {
+                recordId: selectedRow.Id,
+                actionName: 'view'
+            }
+        });
+    }
+
+
+
+
+
+
+
+
+   
 
 }
