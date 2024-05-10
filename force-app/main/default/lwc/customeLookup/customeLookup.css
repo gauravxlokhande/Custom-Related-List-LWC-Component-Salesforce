@@ -1,6 +1,6 @@
 .objname {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
     text-align: center;
 }
@@ -39,9 +39,6 @@
 }
 
 
-
-
-
 .pick-selectfields {
     display: flex;
     gap: 30px;
@@ -50,5 +47,5 @@
 }
 
 .picklist {
-    width: 70%;
+    width: 80%;
 }

@@ -12,7 +12,12 @@
             </div>
         </div>
         <div class="objname ">
-            <b class="message slds-text-heading_medium">{Objectname}</b>
+            <template if:true={SelectedObject}>
+                <b class="message slds-text-heading_medium">{SelectedObject} ({RecordLength}) </b>
+            </template>
+            <template if:false={SelectedObject}>
+                <b class="message slds-text-heading_medium">Object Name (Count) </b>
+            </template>
             <div class="alloperations">
                 <div class="input">
                     <lightning-input type="text" placeholder="Search for records..." value={SearchValue}
@@ -62,6 +67,5 @@
             <div class="slds-backdrop slds-backdrop_open"></div>
         </div>
     </template>
-
 
 </template>

@@ -1,48 +1,77 @@
-import { LightningElement, api, track,wire } from 'lwc';
-import returnAllRelatedObjNames from '@salesforce/apex/CustomLookup.returnAllRelatedObjNames';
+import { LightningElement, api, track, wire } from 'lwc';
 import returnAllRelatedObjFields from '@salesforce/apex/CustomLookup.returnAllRelatedObjFields';
 import queryObjectData from '@salesforce/apex/CustomLookup.queryObjectData';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { getRecord, createRecord, updateRecord, deleteRecord, getRecordUi, getFieldValue, getFieldDisplayValue, getRecordCreateDefaults, createRecordInputFilteredByEditedFields, generateRecordInputForCreate, generateRecordInputForUpdate } from 'lightning/uiRecordApi';
-import { NavigationMixin } from 'lightning/navigation';
+
 import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 
 
-export default class CustomeLookup extends NavigationMixin(LightningElement) {
-    @api objectApiName='';
-    @track StoreAllRelatedObjects = [];
-    @track isShowModal = false;
-    @track StoreAllObjectFields = [];
-    @track selectedOptionsList = [];
-    @track columns = [];
-    @track StoreAllRecordsData = [];
+const actions = [
+    { label: 'Edit', name: 'edit' },
+    { label: 'Delete', name: 'delete' },
+    { label: 'View', name: 'view' },
+];
+
+
+export default class CustomeLookup extends LightningElement {
+
+    @api objectApiName = '';
+    @api recordId = '';
+
+
     @track options = [];
-    @track Objectname = '';
+    @track RelatedObjectData = [];
+    @track isShowModal = false;
+    @track StoreRelatedField = '';
+    @track StoreAllObjectFields = [];
+    @track selectedFinalFields = [];
+    @track RecordLength = '';
 
-    connectedCallback() {
-        this.returnAllRelatedObject();
-        console.log('Current Object Name::', this.objectApiName);
+
+
+    @wire(getObjectInfo, { objectApiName: '$objectApiName' })
+    wiredObjectInfo({ error, data }) {
+        if (data) {
+            this.options = data.childRelationships.map(relationship => ({ value: relationship.childObjectApiName, label: relationship.childObjectApiName }));
+            this.RelatedObjectData = data;
+            // console.log('parentObjectOptions',JSON.stringify(data));
+        } else if (error) {
+            console.error('Error fetching object info:', error);
+        }
     }
 
-    async returnAllRelatedObject() {
-        await returnAllRelatedObjNames({ ObjectName: this.objectApiName })
-            .then((result) => {
-                this.options = result.map(field => ({ label: field, value: field }));
-                console.log('Current Object Related Objects Names::', JSON.stringify(this.StoreAllRelatedObjects));
-            }).catch((error) => {
-                console.error(error);
-            });
+
+    handleChange(event) {
+        this.SelectedObject = event.detail.value;
+
+        const selectedRelationship = this.RelatedObjectData.childRelationships.find(
+            relationship => relationship.childObjectApiName === this.SelectedObject
+        );
+        if (selectedRelationship) {
+            this.StoreRelatedField = selectedRelationship.fieldName;
+            console.log('Template Object Name:', this.SelectedObject);
+            console.log('Related Field Name:', this.StoreRelatedField);
+        } else {
+
+            this.StoreRelatedField = '';
+            console.log('No child relationship found for:', this.SelectedObject);
+        }
     }
 
 
-    async handleChange(event) {
-        this.Objectname = event.detail.value;
 
-        console.log('Template Object Name::', this.Objectname);
+    handleClickOfSelectFields() {
+        this.FetchAllObjectFields();
+        this.isShowModal = true;
+    }
 
-        await returnAllRelatedObjFields({ ObjectName: this.Objectname })
+
+    FetchAllObjectFields() {
+        returnAllRelatedObjFields({ ObjectName: this.SelectedObject })
             .then((result) => {
-                this.StoreAllObjectFields = result.map(field => ({ label: field, value: field }));
+                this.StoreAllObjectFields = result
+                    .filter(field => !field.includes('Id'))
+                    .map(field => ({ label: field, value: field }));
                 console.log('Template Object Fields::', JSON.stringify(this.StoreAllObjectFields));
             })
             .catch((error) => {
@@ -51,38 +80,44 @@ export default class CustomeLookup extends NavigationMixin(LightningElement) {
     }
 
 
-
-
-    handleClickOfSelectFields() {
-        this.isShowModal = true;
-    }
-
-    handleClickOfCloseModal() {
-        this.isShowModal = false;
-    }
-
     handleChangeOfSelectedFields(event) {
-        this.selectedOptionsList = event.detail.value;
-        console.log('Selected Object Fields:', this.selectedOptionsList);
+        this.selectedFinalFields = event.detail.value;
+        console.log(this.selectedFinalFields);
     }
 
 
     handleClickOfOk() {
-        this.columns = this.selectedOptionsList.map(field => ({ label: field, fieldName: field }));
+        const actionColumn = {
+            type: 'action',
+            typeAttributes: { rowActions: actions }, 
+        };
+        const fieldColumns = this.selectedFinalFields.map(field => ({ label: field, fieldName: field }));
+        this.columns = [...fieldColumns, actionColumn];
         this.FetchallobjectData();
+        this.isShowModal = true;
     }
+    
+
 
     FetchallobjectData() {
-        console.log('Objname', this.Objectname);
-        console.log('Optionslist', JSON.stringify(this.selectedOptionsList));
-        queryObjectData({ objectName: this.Objectname, fields: this.selectedOptionsList })
+        console.log('Template Object Name:', this.SelectedObject);
+        console.log('Related Field Name:', this.StoreRelatedField);
+        console.log('Related Field Name:', this.selectedFinalFields);
+
+        queryObjectData({ objectName: this.SelectedObject, fields: this.selectedFinalFields, RelatedField: this.StoreRelatedField, CurrentObjectId: this.recordId })
             .then((result) => {
                 this.isShowModal = false;
                 this.StoreAllRecordsData = result;
+                this.RecordLength = this.StoreAllRecordsData.length;
                 console.log('Selected Object records:', JSON.stringify(result));
             }).catch((error) => {
                 console.error(error.body.message);
             });
+    }
+
+
+    handleClickOfCloseModal() {
+        this.isShowModal = false;
     }
 
 
@@ -93,42 +128,40 @@ export default class CustomeLookup extends NavigationMixin(LightningElement) {
         console.log('searchvalue', this.SearchValue);
         if (this.SearchValue.length > 1) {
             this.StoreAllRecordsData = this.StoreAllRecordsData.filter(item => {
-                return this.selectedOptionsList.some(element => {
+                return this.selectedFinalFields.some(element => {
                     return item[element] && item[element].toLowerCase().includes(this.SearchValue.toLowerCase());
                 });
             });
-        } else {
+        } else if (this.SearchValue.length <= 1) {
             this.FetchallobjectData();
         }
     }
-    
-
-
-
 
 
 
     handleRowAction(event) {
-        const selectedRow = event.detail.row;
-        // Perform action on selected row
-        console.log('Selected Row:', selectedRow);
-        // Example: Navigate to record detail page
-        this[NavigationMixin.Navigate]({
-            type: 'standard__recordPage',
-            attributes: {
-                recordId: selectedRow.Id,
-                actionName: 'view'
-            }
-        });
+        const action = event.detail.action.name;
+        const row = event.detail.row;
+
+        console.log(row);
+        console.log(action);
+        switch (action) {
+            case 'edit':
+                // Handle the edit action
+                break;
+            case 'delete':
+                // Handle the delete action
+                break;
+            case 'view':
+                // Handle the view action
+                break;
+            default:
+                break;
+        }
     }
 
 
 
 
-
-
-
-
-   
 
 }
