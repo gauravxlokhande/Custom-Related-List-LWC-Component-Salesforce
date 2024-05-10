@@ -145,7 +145,7 @@ export default class CustomeLookup extends NavigationMixin(LightningElement) {
                     return item[element] && item[element].toLowerCase().includes(this.SearchValue.toLowerCase());
                 });
             });
-        } else if (this.SearchValue.length <= 1) {
+        } else if (this.SearchValue==null) {
             this.FetchallobjectData();
         }
     }
