@@ -1,17 +1,16 @@
+# Custom Related List Component
+
+## Overview
+The Custom Related List component enhances Salesforce functionality by providing a dynamic interface for viewing and interacting with related object records directly from the Parent Object record page.
+---
+
+![image](https://github.com/gauravxlokhande/Custome-Related-List-Salesforce/assets/119065314/1b74c0ff-c399-413b-bac9-7af112bd22b8)
 
 ![AllAccounts_Accounts_Salesforce-GoogleChrome2024-05-1016-49-51-ezgif com-video-to-gif-converter](https://github.com/gauravxlokhande/Custome-Related-List-Salesforce/assets/119065314/508e1ad2-17c8-439c-a2a0-7a38ff391e10)
 
 ![AllAccounts_Accounts_Salesforce-GoogleChrome2024-05-1016-49-51-ezgif com-video-to-gif-converter (1)](https://github.com/gauravxlokhande/Custome-Related-List-Salesforce/assets/119065314/24f6ce8c-9dba-453f-803f-6cdf5be366da)
 
-
-
-
 ---
-# Custom Related List Component
-
-## Overview
-The Custom Related List component enhances Salesforce functionality by providing a dynamic interface for viewing and interacting with related object records directly from the Parent Object record page.
-
 ## Usage
 ### Step 1: Deployment
 Deploy the Custom Related List component onto the record page of any Parent Object within Salesforce, such as "Account". This deployment enables users to access the component's functionality directly from the Parent Object's record page.
