@@ -1,9 +1,20 @@
+  /*
+    Developed By: Gaurav Lokhande
+    Email: gaurravlokhande@gmail.com
+    Linkedin: https://www.linkedin.com/in/gauravlokhande
+    Github: https://github.com/gauravxlokhande
+    Trailhead: https://www.salesforce.com/trailblazer/gauravlokhande
+    Instagram: gauravxlokhande
+     */
+
+    
 import { LightningElement, api, track, wire } from 'lwc';
 import returnAllRelatedObjFields from '@salesforce/apex/CustomLookup.returnAllRelatedObjFields';
 import queryObjectData from '@salesforce/apex/CustomLookup.queryObjectData';
-import { getRecord, createRecord, updateRecord, deleteRecord, getRecordUi, getFieldValue, getFieldDisplayValue, getRecordCreateDefaults, createRecordInputFilteredByEditedFields, generateRecordInputForCreate, generateRecordInputForUpdate } from 'lightning/uiRecordApi';
-
+import { deleteRecord } from 'lightning/uiRecordApi';
 import { getObjectInfo } from 'lightning/uiObjectInfoApi';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { NavigationMixin } from 'lightning/navigation';
 
 
 const actions = [
@@ -13,35 +24,37 @@ const actions = [
 ];
 
 
-export default class CustomeLookup extends LightningElement {
+export default class CustomeLookup extends NavigationMixin(LightningElement) {
 
     @api objectApiName = '';
     @api recordId = '';
 
 
-    @track options = [];
-    @track RelatedObjectData = [];
-    @track isShowModal = false;
-    @track StoreRelatedField = '';
-    @track StoreAllObjectFields = [];
-    @track selectedFinalFields = [];
-    @track RecordLength = '';
+    @track options = [];   // options for combobox of select object
+    @track RelatedObjectData = [];  // whole data contain object relationships etc..
+    @track isShowModal = false;  // modal for select perticular fields
+    @track StoreRelatedField = '';   // store select object related field 'AccountId'
+    @track StoreAllObjectFields = []; // store all fields that not contain Id
+    @track selectedFinalFields = [];   // all user selected final fields from modal
+    @track RecordLength = ''; // record lentgth
+    @track SearchValue = ''; // search value from input
 
 
 
+    // for fetching all related object and their related field
     @wire(getObjectInfo, { objectApiName: '$objectApiName' })
     wiredObjectInfo({ error, data }) {
         if (data) {
             this.options = data.childRelationships.map(relationship => ({ value: relationship.childObjectApiName, label: relationship.childObjectApiName }));
             this.RelatedObjectData = data;
-            // console.log('parentObjectOptions',JSON.stringify(data));
+            console.log('parentObjectOptions',JSON.stringify(data));
         } else if (error) {
             console.error('Error fetching object info:', error);
         }
     }
 
-
-    handleChange(event) {
+    // Selected object name from combobox
+    handleselectedObjectName(event) {
         this.SelectedObject = event.detail.value;
 
         const selectedRelationship = this.RelatedObjectData.childRelationships.find(
@@ -52,20 +65,19 @@ export default class CustomeLookup extends LightningElement {
             console.log('Template Object Name:', this.SelectedObject);
             console.log('Related Field Name:', this.StoreRelatedField);
         } else {
-
             this.StoreRelatedField = '';
             console.log('No child relationship found for:', this.SelectedObject);
         }
     }
 
 
-
-    handleClickOfSelectFields() {
-        this.FetchAllObjectFields();
+    // select field button
+    async handleClickOfSelectFields() {
+        await this.FetchAllObjectFields();
         this.isShowModal = true;
     }
 
-
+    // fetch all object field method from apex
     FetchAllObjectFields() {
         returnAllRelatedObjFields({ ObjectName: this.SelectedObject })
             .then((result) => {
@@ -80,25 +92,32 @@ export default class CustomeLookup extends LightningElement {
     }
 
 
+    // Final selected fields from right swipe from modal
     handleChangeOfSelectedFields(event) {
         this.selectedFinalFields = event.detail.value;
         console.log(this.selectedFinalFields);
     }
 
 
+    // Ok button in modal
     handleClickOfOk() {
         const actionColumn = {
             type: 'action',
-            typeAttributes: { rowActions: actions }, 
+            typeAttributes: { rowActions: actions },
         };
         const fieldColumns = this.selectedFinalFields.map(field => ({ label: field, fieldName: field }));
         this.columns = [...fieldColumns, actionColumn];
         this.FetchallobjectData();
         this.isShowModal = true;
     }
-    
+
+    // close button in modal
+    handleClickOfCloseModal() {
+        this.isShowModal = false;
+    }
 
 
+    // fetch all object related record method from apex
     FetchallobjectData() {
         console.log('Template Object Name:', this.SelectedObject);
         console.log('Related Field Name:', this.StoreRelatedField);
@@ -116,13 +135,7 @@ export default class CustomeLookup extends LightningElement {
     }
 
 
-    handleClickOfCloseModal() {
-        this.isShowModal = false;
-    }
-
-
-    @track SearchValue = '';
-
+    // get search value from input
     HandleSearchRecords(event) {
         this.SearchValue = event.target.value;
         console.log('searchvalue', this.SearchValue);
@@ -138,7 +151,7 @@ export default class CustomeLookup extends LightningElement {
     }
 
 
-
+    // data table edit, delete, view functionality.
     handleRowAction(event) {
         const action = event.detail.action.name;
         const row = event.detail.row;
@@ -147,13 +160,43 @@ export default class CustomeLookup extends LightningElement {
         console.log(action);
         switch (action) {
             case 'edit':
-                // Handle the edit action
+                this[NavigationMixin.Navigate]({
+                    type: "standard__objectPage",
+                    attributes: {
+                        actionName: "edit",
+                        recordId: row.Id,
+                        objectApiName: this.SelectedObject
+                    }
+                });
                 break;
             case 'delete':
-                // Handle the delete action
+                deleteRecord(row.Id)
+                    .then(() => {
+                        console.log('Record deleted successfully');
+                        this.FetchallobjectData();
+                        this.dispatchEvent(new ShowToastEvent({
+                            title: "Deleted Successful",
+                            message: "Record deleted successfully",
+                            variant: "success"
+                        }));
+                    })
+                    .catch(error => {
+                        console.error('Error deleting record:', error);
+                        this.dispatchEvent(new ShowToastEvent({
+                            title: "Error deleting",
+                            message: "Error deleting record",
+                            variant: "success"
+                        }));
+                    });
                 break;
             case 'view':
-                // Handle the view action
+                this[NavigationMixin.Navigate]({
+                    type: 'standard__recordPage',
+                    attributes: {
+                        recordId: row.Id,
+                        actionName: 'view'
+                    }
+                });
                 break;
             default:
                 break;
@@ -161,6 +204,16 @@ export default class CustomeLookup extends LightningElement {
     }
 
 
+    // new button for creating new record.
+    handleClickOfNew() {
+        this[NavigationMixin.Navigate]({
+            type: "standard__objectPage",
+            attributes: {
+                actionName: "new",
+                objectApiName: this.SelectedObject
+            }
+        });
+    }
 
 
 

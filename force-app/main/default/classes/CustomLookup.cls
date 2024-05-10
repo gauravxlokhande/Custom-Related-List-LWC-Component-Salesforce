@@ -1,24 +1,17 @@
+
+  /*
+    Developed By: Gaurav Lokhande
+    Email: gaurravlokhande@gmail.com
+    Linkedin: https://www.linkedin.com/in/gauravlokhande
+    Github: https://github.com/gauravxlokhande
+    Trailhead: https://www.salesforce.com/trailblazer/gauravlokhande
+    Instagram: gauravxlokhande
+     */
+
 public with sharing class CustomLookup {
+  
     
-    
-    
-    @AuraEnabled
-    public static List<String> returnAllRelatedObjNames(String ObjectName) { 
-        
-        Schema.DescribeSObjectResult objectDescribe = Schema.getGlobalDescribe().get(ObjectName).getDescribe();
-        List<Schema.ChildRelationship> childRelationships = objectDescribe.getChildRelationships();
-        
-        List<String> objectNames = new List<String>();
-        for(Schema.ChildRelationship childRelation : childRelationships) {
-            Schema.DescribeSObjectResult childDescribe = childRelation.getChildSObject().getDescribe();
-            objectNames.add(childDescribe.getName());
-        }
-        
-        System.debug('All objects names: ' + objectNames);
-        return objectNames;
-    }
-    
-    
+    //Used For fetch Object fields
     @AuraEnabled
     public static List<String> returnAllRelatedObjFields( String ObjectName){
         
@@ -39,7 +32,7 @@ public with sharing class CustomLookup {
     
     
     
-    
+    //Used For fetch Object records
     @AuraEnabled
     public static List<Map<String, Object>> queryObjectData(String objectName, List<String> fields, String RelatedField, String CurrentObjectId) {
         String queryString = 'SELECT Id, ' + RelatedField + ', ' + String.join(fields, ', ') + ' FROM ' + objectName + ' WHERE ' + RelatedField + ' = :CurrentObjectId LIMIT 5';
@@ -62,7 +55,24 @@ public with sharing class CustomLookup {
     }
     
     
-    
+     //Previously used for fetch related object names.
+    /*
+    @AuraEnabled
+    public static List<String> returnAllRelatedObjNames(String ObjectName) { 
+        
+        Schema.DescribeSObjectResult objectDescribe = Schema.getGlobalDescribe().get(ObjectName).getDescribe();
+        List<Schema.ChildRelationship> childRelationships = objectDescribe.getChildRelationships();
+        
+        List<String> objectNames = new List<String>();
+        for(Schema.ChildRelationship childRelation : childRelationships) {
+            Schema.DescribeSObjectResult childDescribe = childRelation.getChildSObject().getDescribe();
+            objectNames.add(childDescribe.getName());
+        }
+        
+        System.debug('All objects names: ' + objectNames);
+        return objectNames;
+    }
+    */
     
     
 }

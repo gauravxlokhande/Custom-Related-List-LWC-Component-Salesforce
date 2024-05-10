@@ -1,10 +1,21 @@
+<!-- 
+    Developed By: Gaurav Lokhande
+    Email: gaurravlokhande@gmail.com
+    Linkedin: https://www.linkedin.com/in/gauravlokhande
+    Github: https://github.com/gauravxlokhande
+    Trailhead: https://www.salesforce.com/trailblazer/gauravlokhande
+    Instagram: gauravxlokhande
+     -->
+
+
 <template>
 
+    <!--Header containing select object, select fields button, datatable, search for record, new button start  -->
     <div class="slds-m-top_large slds-box ">
         <div class="pick-selectfields slds-box">
             <div class="picklist">
                 <lightning-combobox name="progress" value={value} placeholder="Select The Child Object"
-                    options={options} onchange={handleChange}></lightning-combobox>
+                    options={options} onchange={handleselectedObjectName}></lightning-combobox>
             </div>
             <div class="selectfields">
                 <lightning-button variant="brand" label="Select Fields"
@@ -31,11 +42,12 @@
         <lightning-datatable key-field="Id" data={StoreAllRecordsData} columns={columns}
             onrowaction={handleRowAction}></lightning-datatable>
     </div>
+    <!--Header containing select object, select fields button, datatable, search for record, new button start  -->
 
 
 
 
-
+    <!-- Modal for show fields to user start -->
     <template if:true={isShowModal}>
         <div class="modalstyle">
             <section role="dialog" aria-labelledby="modal-heading-01" aria-modal="true"
@@ -67,5 +79,6 @@
             <div class="slds-backdrop slds-backdrop_open"></div>
         </div>
     </template>
+    <!-- Modal for show fields to user End -->
 
 </template>
