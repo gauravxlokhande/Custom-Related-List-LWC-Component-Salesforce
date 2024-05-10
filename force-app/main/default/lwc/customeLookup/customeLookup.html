@@ -39,7 +39,8 @@
                 </div>
             </div>
         </div>
-        <lightning-datatable key-field="Id" data={StoreAllRecordsData} columns={columns}
+        <lightning-datatable key-field="Id" data={StoreAllRecordsData} columns={columns} hide-checkbox-column
+            show-row-number-column
             onrowaction={handleRowAction}></lightning-datatable>
     </div>
     <!--Header containing select object, select fields button, datatable, search for record, new button start  -->
